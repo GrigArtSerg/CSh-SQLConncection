@@ -195,7 +195,7 @@ namespace CVD_Test
                 string EmpSalary = "select department_id, salary from employee where chief_id != 0";
                 MySqlCommand CMD_EmpSalary = new MySqlCommand(EmpSalary, Conn);
                 MySqlDataReader Read_EmpSalary = CMD_EmpSalary.ExecuteReader();
-                //Read_EmpSalary.Read();
+               
                 while (Read_EmpSalary.Read())
                 {
                     if (Read_EmpSalary.GetInt32("salary") > Max)
@@ -203,7 +203,6 @@ namespace CVD_Test
                         Max = Read_EmpSalary.GetInt32("salary");
                         MaxDep = Read_EmpSalary.GetInt32("department_id");
                     }
-                    //else Console.WriteLine(Read_EmpSalary.GetInt32("salary"));
                 }
                 Read_EmpSalary.Close();
             }
