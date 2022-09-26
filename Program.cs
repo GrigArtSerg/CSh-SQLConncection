@@ -16,28 +16,28 @@ namespace CVD_Test
             String ConnPort = "port = ";
             ConnPort += Console.ReadLine() + ";";// 3306;
 
-            Console.Write("Введите порт базы данных: ");
+            Console.Write("Введите имя пользователя базы данных: ");
             String ConnUser = " user = ";
             ConnUser += Console.ReadLine() + ";";// root;
 
-            Console.Write("Введите порт базы данных: ");
+            Console.Write("Введите пароль базы данных: ");
             String ConnPass = "password = ";
             ConnPass += Console.ReadLine() + ";";// password;
 
-            Console.Write("Введите порт базы данных: ");
+            Console.Write("Введите имя базы данных: ");
             String ConnDB = "database = ";
             ConnDB += Console.ReadLine() + ";";// new_schema;
             
-            /*
+            
             String ConnectTM = "server = 127.0.0.1;" +
                                 "port = 3306; user = root;" +
                                 "password = password;" +
                                 "database = new_schema;";
-            */
-            String Connect = ConnSer + ConnPort + ConnUser + ConnPass + ConnDB;
+            
+            //String Connect = ConnSer + ConnPort + ConnUser + ConnPass + ConnDB;
             
             
-            MySqlConnection Conn = new MySqlConnection(Connect);
+            MySqlConnection Conn = new MySqlConnection(ConnectTM);
             try
             {
                 Conn.Open();
@@ -55,7 +55,7 @@ namespace CVD_Test
 
                 while (true)
                 {
-                    Console.WriteLine("Salary - запрос суммарной зарплаты в разрезе департамента");
+                    Console.WriteLine("\nSalary - запрос суммарной зарплаты в разрезе департамента");
                     Console.WriteLine("Max - запрос департамента с максимальной зарплатой");
                     Console.WriteLine("Chiefs - вывод ЗП руководителей (по убыванию)");
                     Console.WriteLine("Введите команду:");
@@ -71,14 +71,14 @@ namespace CVD_Test
 
                             if (Dep == "all")
                             {
-                                Console.WriteLine(SalaryByDepartments(Conn, 1, false));
-                                Console.WriteLine(SalaryByDepartments(Conn, 1, true));
+                                Console.WriteLine($"Департамент 1 без руководителей: {SalaryByDepartments(Conn, 1, false)}");
+                                Console.WriteLine($"Департамент 1 c руководителем: {SalaryByDepartments(Conn, 1, true)}");
 
-                                Console.WriteLine(SalaryByDepartments(Conn, 2, false));
-                                Console.WriteLine(SalaryByDepartments(Conn, 2, true));
+                                Console.WriteLine($"Департамент 2 без руководителей: {SalaryByDepartments(Conn, 2, false)}");
+                                Console.WriteLine($"Департамент 2 с руководителем: {SalaryByDepartments(Conn, 2, true)}");
 
-                                Console.WriteLine(SalaryByDepartments(Conn, 3, false));
-                                Console.WriteLine(SalaryByDepartments(Conn, 3, true));
+                                Console.WriteLine($"Департамент 3 без руководителей: {SalaryByDepartments(Conn, 3, false)}");
+                                Console.WriteLine($"Департамент 3 с руководителем: {SalaryByDepartments(Conn, 3, true)}");
 
                                 break;
                             }
@@ -104,14 +104,15 @@ namespace CVD_Test
 
                                 if (IsCh == "y") IsChief = true;
                                 else if (IsCh != "n") Console.WriteLine("Неверная команда");
-                                Console.WriteLine(SalaryByDepartments(Conn, DepNum, IsChief));
+                                
+                                Console.WriteLine($"\nДепартамент {DepNum} без руководителя: {SalaryByDepartments(Conn, DepNum, IsChief)}");
                             }
                             else Console.WriteLine($"Департамент не существует. Всего {DepCount} департаментов");
 
                             break;
 
                         case "max":
-                            Console.WriteLine(MaxSalaryDep(Conn));
+                            Console.WriteLine($"Максимальная зарплата у сотрудника в {MaxSalaryDep(Conn)} департаменте");
                             break;
                         
                         case "chiefs":
@@ -124,10 +125,10 @@ namespace CVD_Test
                     }
                 }
             }
-            /*catch (MySqlException ex)
+            catch (MySqlException ex)
             {
                 Console.WriteLine($"Warning 1: {ex.Message}");
-            }*/
+            }
             finally
             {
                 Conn.Close();
@@ -142,7 +143,7 @@ namespace CVD_Test
             {
                 if (Conn.State == System.Data.ConnectionState.Closed) Conn.Open();
 
-                Console.WriteLine("Соединение установлено");
+                //Console.WriteLine("Соединение установлено");
 
                 string SQL_Employee = $"select salary from employee where department_id = {DepartmentNumber}";
                 MySqlCommand CMD_Employee = new MySqlCommand(SQL_Employee, Conn);
@@ -158,7 +159,7 @@ namespace CVD_Test
             }
             catch (MySqlException ex)
             {
-                Console.WriteLine($"Warning 1: {ex.Message}");
+                Console.WriteLine($"Warning 2: {ex.Message}");
             }
             finally
             {
@@ -208,7 +209,7 @@ namespace CVD_Test
             }
             catch (MySqlException ex)
             {
-                Console.WriteLine($"Warning 1: {ex.Message}");
+                Console.WriteLine($"Warning 3: {ex.Message}");
             }
             finally
             {
@@ -219,34 +220,47 @@ namespace CVD_Test
 
         static void ChifSalary(MySqlConnection Conn, int DepCount)
         {
-            List<int> Chiefs = new List<int> { };
-
-            string ChiefsList = "select distinct chief_id from employee where chief_id != 0";
-            MySqlCommand CMD_ChiefsList = new MySqlCommand(ChiefsList, Conn);
-            MySqlDataReader Read_ChiefsList = CMD_ChiefsList.ExecuteReader();
-            
-            while (Read_ChiefsList.Read())
+            try
             {
-                Chiefs.Add(Read_ChiefsList.GetInt32("chief_id"));
+                if (Conn.State == System.Data.ConnectionState.Closed) Conn.Open();
+
+                List<int> Chiefs = new List<int> { };
+
+                string ChiefsList = "select distinct chief_id from employee where chief_id != 0";
+                MySqlCommand CMD_ChiefsList = new MySqlCommand(ChiefsList, Conn);
+                MySqlDataReader Read_ChiefsList = CMD_ChiefsList.ExecuteReader();
+
+                while (Read_ChiefsList.Read())
+                {
+                    Chiefs.Add(Read_ChiefsList.GetInt32("chief_id"));
+                }
+
+                Read_ChiefsList.Close();
+
+                for (int i = 0; i < Chiefs.Count; i++)
+                {
+                    string ChiefSalary = $"select salary from employee where id = {Chiefs[i]}";
+                    MySqlCommand CMD_ChiefSalary = new MySqlCommand(ChiefSalary, Conn);
+                    MySqlDataReader Read_ChiefSalary = CMD_ChiefSalary.ExecuteReader();
+
+                    while (Read_ChiefSalary.Read()) Chiefs[i] = Read_ChiefSalary.GetInt32("salary");
+                    Read_ChiefSalary.Close();
+                }
+
+                Chiefs.Sort();
+
+                for (int i = Chiefs.Count - 1; i >= 0; i--)
+                {
+                    Console.WriteLine(Chiefs[i]);
+                }
             }
-
-            Read_ChiefsList.Close();
-
-            for (int i = 0; i < Chiefs.Count; i++)
+            catch (MySqlException ex)
             {
-                string ChiefSalary = $"select salary from employee where id = {Chiefs[i]}";
-                MySqlCommand CMD_ChiefSalary = new MySqlCommand(ChiefSalary, Conn);
-                MySqlDataReader Read_ChiefSalary = CMD_ChiefSalary.ExecuteReader();
-                
-                while (Read_ChiefSalary.Read()) Chiefs[i] = Read_ChiefSalary.GetInt32("salary");
-                Read_ChiefSalary.Close();
+                Console.WriteLine($"Warning 4: {ex.Message}");
             }
-
-            Chiefs.Sort();
-
-            for (int i = Chiefs.Count-1; i >= 0; i--)
+            finally
             {
-                Console.WriteLine(Chiefs[i]);
+                Conn.Close();
             }
         }
     }
