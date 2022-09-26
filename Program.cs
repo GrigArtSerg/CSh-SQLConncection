@@ -28,16 +28,16 @@ namespace CVD_Test
             String ConnDB = "database = ";
             ConnDB += Console.ReadLine() + ";";// new_schema;
             
-            
+            /*
             String ConnectTM = "server = 127.0.0.1;" +
                                 "port = 3306; user = root;" +
                                 "password = password;" +
                                 "database = new_schema;";
+            */
+            String Connect = ConnSer + ConnPort + ConnUser + ConnPass + ConnDB;
             
-            //String Connect = ConnSer + ConnPort + ConnUser + ConnPass + ConnDB;
             
-            
-            MySqlConnection Conn = new MySqlConnection(ConnectTM);
+            MySqlConnection Conn = new MySqlConnection(Connect);
             try
             {
                 Conn.Open();
