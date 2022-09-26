@@ -6,15 +6,38 @@ namespace CVD_Test
 {
     class Program
     {
-        static String Connect = "server = 127.0.0.1;" +
-                                "port = 3306; user = root;" +
-                                "password = password;" +
-                                "database = new_schema;"; 
-                                                          
-        static MySqlConnection Conn = new MySqlConnection(Connect);
-        
         static void Main(string[] args)
         {
+            Console.Write("Введите IP сервера базы данных: ");
+            String ConnSer = "server = ";
+            ConnSer += Console.ReadLine() + ";"; // 127.0.0.1;
+
+            Console.Write("Введите порт базы данных: ");
+            String ConnPort = "port = ";
+            ConnPort += Console.ReadLine() + ";";// 3306;
+
+            Console.Write("Введите порт базы данных: ");
+            String ConnUser = " user = ";
+            ConnUser += Console.ReadLine() + ";";// root;
+
+            Console.Write("Введите порт базы данных: ");
+            String ConnPass = "password = ";
+            ConnPass += Console.ReadLine() + ";";// password;
+
+            Console.Write("Введите порт базы данных: ");
+            String ConnDB = "database = ";
+            ConnDB += Console.ReadLine() + ";";// new_schema;
+            
+            /*
+            String ConnectTM = "server = 127.0.0.1;" +
+                                "port = 3306; user = root;" +
+                                "password = password;" +
+                                "database = new_schema;";
+            */
+            String Connect = ConnSer + ConnPort + ConnUser + ConnPass + ConnDB;
+            
+            
+            MySqlConnection Conn = new MySqlConnection(Connect);
             try
             {
                 Conn.Open();
@@ -48,14 +71,14 @@ namespace CVD_Test
 
                             if (Dep == "all")
                             {
-                                Console.WriteLine(SalaryByDepartments(1, false));
-                                Console.WriteLine(SalaryByDepartments(1, true));
+                                Console.WriteLine(SalaryByDepartments(Conn, 1, false));
+                                Console.WriteLine(SalaryByDepartments(Conn, 1, true));
 
-                                Console.WriteLine(SalaryByDepartments(2, false));
-                                Console.WriteLine(SalaryByDepartments(2, true));
+                                Console.WriteLine(SalaryByDepartments(Conn, 2, false));
+                                Console.WriteLine(SalaryByDepartments(Conn, 2, true));
 
-                                Console.WriteLine(SalaryByDepartments(3, false));
-                                Console.WriteLine(SalaryByDepartments(3, true));
+                                Console.WriteLine(SalaryByDepartments(Conn, 3, false));
+                                Console.WriteLine(SalaryByDepartments(Conn, 3, true));
 
                                 break;
                             }
@@ -81,18 +104,18 @@ namespace CVD_Test
 
                                 if (IsCh == "y") IsChief = true;
                                 else if (IsCh != "n") Console.WriteLine("Неверная команда");
-                                Console.WriteLine(SalaryByDepartments(DepNum, IsChief));
+                                Console.WriteLine(SalaryByDepartments(Conn, DepNum, IsChief));
                             }
                             else Console.WriteLine($"Департамент не существует. Всего {DepCount} департаментов");
 
                             break;
 
                         case "max":
-                            Console.WriteLine(MaxSalaryDep());
+                            Console.WriteLine(MaxSalaryDep(Conn));
                             break;
                         
                         case "chiefs":
-                            ChifSalary(DepCount);
+                            ChifSalary(Conn, DepCount);
                             break;
                         
                         default:
@@ -111,7 +134,7 @@ namespace CVD_Test
             }
         }
 
-        static int SalaryByDepartments(int DepartmentNumber, bool IsChief)
+        static int SalaryByDepartments(MySqlConnection Conn, int DepartmentNumber, bool IsChief)
         {
             int Salary = 0;
 
@@ -131,7 +154,7 @@ namespace CVD_Test
                 }
                 Read_Employee.Close();
 
-                if (IsChief) Salary += FindChief(DepartmentNumber);
+                if (IsChief) Salary += FindChief(Conn, DepartmentNumber);
             }
             catch (MySqlException ex)
             {
@@ -144,7 +167,7 @@ namespace CVD_Test
             return Salary;
         }
 
-        static int FindChief(int DepartmentNumber)
+        static int FindChief(MySqlConnection Conn, int DepartmentNumber)
         {
             string Chief = $"select chief_id from employee where department_id = {Convert.ToString(DepartmentNumber)}";
             MySqlCommand CMD_Chief = new MySqlCommand(Chief, Conn);
@@ -160,7 +183,7 @@ namespace CVD_Test
             return Read_ChiefSalary.GetInt32("salary");
         }
 
-        static int MaxSalaryDep()
+        static int MaxSalaryDep(MySqlConnection Conn)
         {
             int Max = 0, MaxDep = 0;
 
@@ -194,7 +217,7 @@ namespace CVD_Test
             return MaxDep;
         }
 
-        static void ChifSalary(int DepCount)
+        static void ChifSalary(MySqlConnection Conn, int DepCount)
         {
             List<int> Chiefs = new List<int> { };
 
